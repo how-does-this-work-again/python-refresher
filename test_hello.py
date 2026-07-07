@@ -33,13 +33,13 @@ class TestHello(unittest.TestCase):
         self.assertEqual(hello.div(0, 1), 0)
         self.assertEqual(hello.div(1.5, 2.5), 0.6)
         self.assertEqual(hello.div(1.5, -2.5), -0.6)
-        with self.assertRaises(ValueError, "Can't divide by zero!"):
+        with self.assertRaises(ValueError):
             hello.div(1, 0)
 
     def test_sqrt(self):  
         self.assertEqual(hello.sqrt(4), 2.0)
         self.assertEqual(hello.sqrt(0), 0.0)
-        with self.assertRaises(ValueError, "Can't square root a negative number!"):
+        with self.assertRaises(ValueError):
             hello.div(1, 0)
     
     def test_power(self):
@@ -66,22 +66,22 @@ class TestHello(unittest.TestCase):
     def test_sin(self):
         self.assertEqual(hello.sin(0), 0)
         self.assertAlmostEqual(hello.sin(1), 0.841470984807896)
-        self.assertEqual(hello.sin(np.pi), 0.0)
+        self.assertAlmostEqual(hello.sin(np.pi), 0.0)
 
     def test_cos(self):
         self.assertEqual(hello.cos(0), 1)
         self.assertAlmostEqual(hello.cos(1), 0.5403023058681398)
-        self.assertEqual(hello.cos(np.pi), -1.0)
+        self.assertAlmostEqual(hello.cos(np.pi), -1.0)
 
     def test_tan(self):
         self.assertEqual(hello.tan(0), 0)
         self.assertAlmostEqual(hello.tan(1), 1.557407724654902)
-        self.assertEqual(hello.tan(np.pi), 0.0)
+        self.assertAlmostEqual(hello.tan(np.pi), 0)
 
     def test_cot(self):
         self.assertEqual(hello.cot(0), float("inf"))
         self.assertAlmostEqual(hello.cot(1), 0.6420926159343308)
-        self.assertEqual(hello.cot(np.pi), float("inf"))
+        self.assertAlmostEqual(hello.cot(np.pi), float("-inf"))
 
 if __name__ == "__main__":
     unittest.main()

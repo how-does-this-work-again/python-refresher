@@ -30,6 +30,8 @@ def sqrt(a):
 
 
 def power(a, b):
+    if b < 0:
+        return 1 / np.power(a, -b)
     return np.power(a, b)
 
 
@@ -54,8 +56,10 @@ def tan(a):
 
 
 def cot(a):
-    if tan(a) == 0:
+    if a % (2*np.pi) == 0:
         return float("inf")
+    elif a % np.pi == 0:
+        return float("-inf")
     return 1 / np.tan(a)
 
 

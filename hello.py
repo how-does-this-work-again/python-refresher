@@ -24,6 +24,8 @@ def div(a, b):
 
 
 def sqrt(a):
+    if a < 0:
+        raise ValueError("Can't square root a negative number!")
     return np.sqrt(a)
 
 
@@ -40,21 +42,21 @@ def exp(a):
 
 
 def sin(a):
-    return float(np.sin(a).round(15))
+    return np.sin(a)
 
 
 def cos(a):
-    return float(np.cos(a).round(16))
+    return np.cos(a)
 
 
 def tan(a):
-    return float(np.tan(a).round(15))
+    return np.tan(a)
 
 
 def cot(a):
     if tan(a) == 0:
         return float("inf")
-    return float((1 / np.tan(a)).round(16))
+    return 1 / np.tan(a)
 
 
 def __main__():

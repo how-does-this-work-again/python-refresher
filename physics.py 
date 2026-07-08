@@ -1,0 +1,46 @@
+# 1.6 - underwater physics
+
+g = 9.81 # gravity, m/s^2
+
+def calculate_buoyancy(V, density_fluid):
+    """Calculates the buoyancy force exerted on a object submerged in water.
+    
+    Inputs: V - volume in m^3, density_fluid - density in kg/m^3
+    Formula: buoyant force = density * volume * gravity (9.81 m/s^2)
+    returns buoyant force in newtons (N)
+    """
+    return V * density_fluid * g
+
+def will_it_float(V, mass):
+    """Determines if an object will float or sink in water.
+    
+    if the buoyant force is greater than the weight of the object, it will float
+    if the buoyant force is less than the weight of the object, it will sink
+    
+    Inputs: V - volume in m^3, mass - mass in kg
+    density of water is 1000 kg/m^3, gravity is 9.81 m/s^2
+    returns True if the object will float, False if it will sink
+    """
+    buoyant_force = calculate_buoyancy(V, 1000)
+    return buoyant_force > (mass * g) # weight is mass * gravity
+
+def calculate_pressure(depth):
+    """Calculates the pressure at a given depth in water.
+    
+    formula: pressure = density * gravity * depth
+    density of water is 1000 kg/m^3
+    gravity is in m/s^2
+    depth is in meters
+    returns pressure in pascals (Pa)
+    """
+    return 1000 * g * depth
+
+def calculate_acceleration(force, mass):
+    """Calculates the acceleration of an object given the force applied and its mass.
+    
+    formula: acceleration = force / mass
+    force is in newtons (N), mass is in kg
+    returns acceleration in m/s^2
+    """
+    return force / mass
+

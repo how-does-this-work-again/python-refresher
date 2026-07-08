@@ -1,3 +1,5 @@
+# 1.2 python - "hello" testing
+
 import unittest
 import hello
 import numpy as np

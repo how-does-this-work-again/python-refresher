@@ -1,3 +1,4 @@
+# 1.2 python - bank account
 
 class Account:
     def __init__(self, name, account_number, balance=0):

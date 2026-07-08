@@ -1,24 +1,28 @@
 import unittest
 import bankacc
 
-accountdeposittest = bankacc.Account("person", 100)
-accountwithdrawtest = bankacc.Account("person", 100)
-accountchecktest = bankacc.Account("person", 100)
+testBank = bankacc.Bank([])
+accountDepositTest = testBank.addAccount("deposit test", 100)
+accountWithdrawTest = testBank.addAccount("withdraw test", 100)
+accountCheckTest = testBank.addAccount("check test", 100)
 
 class TestBank(unittest.TestCase):
-
     def test_deposit(self):
-        self.assertEqual(accountdeposittest.deposit(10), "Deposited $10 to account #67(person). New balance: 110")
-        self.assertEqual(accountdeposittest.deposit(0), "Deposited $0 to account #67(person). New balance: 110")
-        self.assertEqual(accountdeposittest.deposit(100), "Deposited $100 to account #67(person). New balance: 210")
+        self.assertEqual(accountDepositTest.deposit(10), 110)
+        self.assertEqual(accountDepositTest.deposit(0), 110)
+        self.assertEqual(accountDepositTest.deposit(100), 210)
+        self.assertEqual(accountDepositTest.deposit(-10), False)
+        self.assertEqual(accountDepositTest.deposit("string"), False)
 
     def test_withdraw(self):
-        self.assertEqual(accountwithdrawtest.withdraw(500), "ur poor lollll. Current balance: 100")
-        self.assertEqual(accountwithdrawtest.withdraw(40), "Withdrew $40 from account #67(person). New balance: 60")
-        self.assertEqual(accountwithdrawtest.withdraw(0), "Withdrew $0 from account #67(person). New balance: 60")
+        self.assertEqual(accountWithdrawTest.withdraw(500), False)
+        self.assertEqual(accountWithdrawTest.withdraw(40), 60)
+        self.assertEqual(accountWithdrawTest.withdraw(0), 60)
+        self.assertEqual(accountWithdrawTest.withdraw(-10), False)
+        self.assertEqual(accountWithdrawTest.withdraw("string"), False)
 
     def test_get_balance(self):
-        self.assertEqual(accountchecktest.get_balance(), 100)
+        self.assertEqual(accountCheckTest.get_balance(), 100)
 
 if __name__ == "__main__":
     unittest.main()

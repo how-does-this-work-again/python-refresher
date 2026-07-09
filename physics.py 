@@ -1,7 +1,13 @@
 # 1.6 - underwater physics
 
+import math
+import numpy as np
+
 g = 9.81 # gravity, m/s^2
 
+# idk what 'test function' means like unittesting ig
+
+# problem 1
 def calculate_buoyancy(V, density_fluid):
     """Calculates the buoyancy force exerted on a object submerged in water.
     
@@ -11,6 +17,7 @@ def calculate_buoyancy(V, density_fluid):
     """
     return V * density_fluid * g
 
+# problem 2
 def will_it_float(V, mass):
     """Determines if an object will float or sink in water.
     
@@ -21,9 +28,9 @@ def will_it_float(V, mass):
     density of water is 1000 kg/m^3, gravity is 9.81 m/s^2
     returns True if the object will float, False if it will sink
     """
-    buoyant_force = calculate_buoyancy(V, 1000)
-    return buoyant_force > (mass * g) # weight is mass * gravity
+    return (V * 1000) > mass # taking gravity out of the equation by canceling it out on both sides of the inequality
 
+# problem 3
 def calculate_pressure(depth):
     """Calculates the pressure at a given depth in water.
     
@@ -35,6 +42,7 @@ def calculate_pressure(depth):
     """
     return 1000 * g * depth
 
+# problem 4
 def calculate_acceleration(force, mass):
     """Calculates the acceleration of an object given the force applied and its mass.
     
@@ -43,4 +51,78 @@ def calculate_acceleration(force, mass):
     returns acceleration in m/s^2
     """
     return force / mass
+
+# problem 5
+def calculate_angular_acceleration(tau, I):
+    """Calculates the angular acceleration of an object given the torque applied and its moment of inertia.
+    
+    formula: moment of inertia (I) x angular acceleration = torque (im assuming multiplication not cross product bc of units)
+    torque is in newton-meters (N*m), moment of inertia is in kg*m^2
+    returns angular acceleration in rad/s^2
+    """
+    return tau / I
+
+# problem 6
+def calculate_torque(F_magnitude, F_direction, r):
+    """Calculates torque exerted on an object given applied force, force direction, and distance from the axis of rotation.
+    
+    formula: torque = r * F * sin(theta), or r x F
+    r is distance from axis of rotation to where the force is applied, F is the force applied to the object
+    F_magnitude is magnitude of force in newtons (N), F_direction is direction of force in degrees, r is in meters
+    returns torque in newton-meters (N*m)
+    """
+    theta = math.radians(F_direction) # convert degrees to radians
+    return r * F_magnitude * math.sin(theta)
+
+# problem 7
+def calculate_moment_of_inertia(m, r):
+    """Calculates the moment of inertia of a solid sphere given its mass and radius.
+    
+    formula: I = m * r^2
+    m is mass in kg, r is distance from the axis of rotation to the center of mass of the object (technically radius) in meters
+    returns moment of inertia in kg*m^2
+    """
+    return m * r**2
+
+# problem 8
+def calculate_auv_acceleration(F_magnitude, F_angle, mass=100, volume=0.1, thruster_distance=0.5):
+    """Calculates linear acceleration of an AUV in the 2D plane
+     
+    inputs (what is given):
+    F_magnitude: magnitude of force applied by the thruster (N)
+    F_angle: angle of force applied by thruster (radians). measured from the x-axis, positive angles in counter-clockwise direction
+    mass (optional): mass of the AUV (kg) - default 100kg
+    volume (optional): volume of the AUV (m^3) - default 0.1m^3
+    thruster_distance (optional): distance from AUV center of mass to thruster (m) - default 0.5m
+
+    returns linear acceleration of the AUV in m/s^2 (as a vector)
+    """
+
+    # idk why we need volume??? or thruster distance??? maybe for torque and angular acceleration but not linear acceleration
+
+    # calculate acceleration - f=ma and trig rules
+    ax = (F_magnitude * np.cos(F_angle)) / mass
+    ay = (F_magnitude * np.sin(F_angle)) / mass
+
+    return (ax, ay)
+
+def calculate_auv_angular_acceleration(F_magnitude, F_angle, inertia=1, thruster_distance=0.5):
+    """Calculates angular acceleration of an AUV in the 2D plane
+    
+    inputs (what is given):
+    F_magnitude: magnitude of force applied by the thruster (N)
+    F_angle: angle of force applied by thruster (radians). measured from the x-axis, positive angles in counter-clockwise direction
+    inertia (optional): inertia of the AUV (kg * m^2) - default 1 kg * m^2
+    thruster_distance (optional): distance from AUV center of mass to thruster (m) - default 0.5m
+
+    returns angular acceleration of the AUV in rad/s^2
+    """
+
+    # calculate torque
+    torque = calculate_torque(F_magnitude, math.degrees(F_angle), thruster_distance)
+
+    # calculate angular acceleration
+    angular_acceleration = calculate_angular_acceleration(torque, inertia)
+
+    return angular_acceleration
 

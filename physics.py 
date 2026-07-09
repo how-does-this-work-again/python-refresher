@@ -5,8 +5,6 @@ import numpy as np
 
 g = 9.81 # gravity, m/s^2
 
-# idk what 'test function' means like unittesting ig
-
 # problem 1
 def calculate_buoyancy(V, density_fluid):
     """Calculates the buoyancy force exerted on a object submerged in water.
@@ -57,10 +55,10 @@ def calculate_angular_acceleration(tau, I):
     """Calculates the angular acceleration of an object given the torque applied and its moment of inertia.
     
     formula: moment of inertia (I) x angular acceleration = torque (im assuming multiplication not cross product bc of units)
-    torque is in newton-meters (N*m), moment of inertia is in kg*m^2
-    returns angular acceleration in rad/s^2
+    torque is in newton-meters (N*m) (vector), moment of inertia is in kg*m^2 (scalar)
+    returns angular acceleration in rad/s^2 (vector)
     """
-    return tau / I
+    return tau / I 
 
 # problem 6
 def calculate_torque(F_magnitude, F_direction, r):
@@ -69,10 +67,11 @@ def calculate_torque(F_magnitude, F_direction, r):
     formula: torque = r * F * sin(theta), or r x F
     r is distance from axis of rotation to where the force is applied, F is the force applied to the object
     F_magnitude is magnitude of force in newtons (N), F_direction is direction of force in degrees, r is in meters
-    returns torque in newton-meters (N*m)
+    returns torque in newton-meters (N*m) (vector)
     """
     theta = math.radians(F_direction) # convert degrees to radians
-    return r * F_magnitude * math.sin(theta)
+    F = np.array([math.cos(theta), math.sin(theta)])
+    return np.cross(F, r)
 
 # problem 7
 def calculate_moment_of_inertia(m, r):
@@ -97,8 +96,6 @@ def calculate_auv_acceleration(F_magnitude, F_angle, mass=100, volume=0.1, thrus
 
     returns linear acceleration of the AUV in m/s^2 (as a vector)
     """
-
-    # idk why we need volume??? or thruster distance??? maybe for torque and angular acceleration but not linear acceleration
 
     # calculate acceleration - f=ma and trig rules
     ax = (F_magnitude * np.cos(F_angle)) / mass
@@ -126,3 +123,134 @@ def calculate_auv_angular_acceleration(F_magnitude, F_angle, inertia=1, thruster
 
     return angular_acceleration
 
+# problem 9
+
+def calculate_auv2_acceleration(T, alpha, theta, mass=100):
+    """Calculates the acceleration of a 4-thruster AUV in the 2D plan.
+    
+    inputs:
+    T: an np.ndarray of the magnitudes of the forces applied by the thrusters in Newtons.
+    alpha: angle of the thrusters in radians.
+    theta: angle of the AUV in radians.
+    mass (optional): mass of the AUV in kilograms. The default value is 100kg
+
+    returns linear acceleration of the AUV in m/s^2 (as a vector)
+    """
+
+    # get vectors from T and alpha (a bit more complex bc the theta is diff)
+    T1 = np.array([T[0] * np.cos(alpha[0]), T[0] * np.sin(alpha[0])])
+    T2 = np.array([T[1] * np.cos(alpha[1]), T[1] * -1 * np.sin(alpha[1])])
+    T3 = np.array([T[2] * -1 * np.cos(alpha[2]), T[2] * -1 * np.sin(alpha[2])])
+    T4 = np.array([T[3] * -1 * np.cos(alpha[3]), T[3] * np.sin(alpha[3])])
+
+    # sum them all
+    F = T1 + T2 + T3 + T4
+
+    # multiply by rotation matrix of theta to get in frame of reference
+    rotation_matrix = np.array([[np.cos(theta), -1 * np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    F_rotated = np.dot(rotation_matrix, F)
+
+    # f=ma :)
+    a = F_rotated / mass
+
+    return a
+
+def calculate_auv2_angular_acceleration(T, alpha, L, l, inertia=100):
+    """Calculates the angular acceleration of a 4-thruster AUV in the 2D plane.
+    
+    inputs:
+    T: an np.ndarray of the magnitudes of the forces applied by the thrusters in Newtons.
+    alpha: angle of the thrusters in radians.
+    L: longitudinal distance from the center of mass of the AUV to the thrusters in meters.
+    l: lateral distance from the center of mass of the AUV to the thrusters in meters.
+    inertia: the moment of inertia of the AUV in kg*m^2, default 100 kg*m^2
+
+    returns angular acceleration of the AUV in rad/s^2
+    """
+
+    thruster_distance = math.sqrt(L**2 + l**2)
+
+    # get torque from each thruster
+    torque1 = calculate_torque(T[0], math.degrees(alpha), thruster_distance)
+    torque2 = calculate_torque(T[1], math.degrees(-1 * alpha), thruster_distance)
+    torque3 = calculate_torque(T[2], math.degrees(math.pi + alpha), thruster_distance)
+    torque4 = calculate_torque(T[3], math.degrees(math.pi - alpha), thruster_distance)
+
+    # sum them all to find net torque
+    total_torque = torque1 + torque2 + torque3 + torque4
+
+    # calculate angular acceleration
+    angular_acceleration = calculate_angular_acceleration(total_torque, inertia)
+
+    return angular_acceleration
+
+# problem 10
+
+def simulate_auv2_motion(T, alpha, L, l, mass=100, inertia=100, dt=0.1, t_final=10, x0=0, y0=0, theta0=0):
+    """simulates the motion of the AUV in the 2D plane.
+    
+    inputs:
+    T: an np.ndarray of the magnitudes of the forces applied by the thrusters in Newtons.
+    alpha: the angle of the thrusters in radians.
+    L: the distance from the center of mass of the AUV to the thrusters in meters.
+    l: the distance from the center of mass of the AUV to the thrusters in meters.
+    mass (optional): the mass of the AUV in kilograms. The default value is 100kg.
+    inertia (optional): the moment of inertia of the AUV in kg*m^2. The default value is 100kg*m^2
+    dt (optional): the time step of the simulation in seconds. The default value is 0.1s.
+    t_final (optional): the final time of the simulation in seconds. The default value is 10s.
+    x0 (optional): the initial x-position of the AUV in meters. The default value is 0m.
+    y0 (optional): the initial y-position of the AUV in meters. The default value is 0m.
+    theta0 (optional): the initial angle of the AUV in radians. The default value is 0rad.
+
+    returns a tuple (t, x, y, theta, v, omega, a)
+    t: an np.ndarray of the time steps of the simulation in seconds. (time 0 is initial time)
+    x: an np.ndarray of the x-positions of the AUV in meters.
+    y: an np.ndarray of the y-positions of the AUV in meters.
+    theta: an np.ndarray of the angles of the AUV in radians.
+    v: an np.ndarray of the velocities of the AUV in meters per second.
+    omega: an np.ndarray of the angular velocities of the AUV in radians per second.
+    a: an np.ndarray of the accelerations of the AUV in meters per second squared.
+    """
+    
+    # init
+    AUVpose = [x0, y0, theta0]
+    t = []
+    x = []
+    y = []
+    theta = []
+    v = []
+    omega = []
+    a = []
+
+    for i in range(t_final/dt):
+        # time and positions
+        t.append(dt*i)
+        x.append(AUVpose[0])
+        y.append(AUVpose[1])
+        theta.append(AUVpose[2])
+
+        # finding and adding velocity/acceleration - only applicable if theres a previous position to compare
+        if len(t) > 1:
+            # velocity is change of position - it is a vector
+            v.append(np.ndarray([x[-1] - x[-2], y[-1] - y[-2]]))
+            # angular velocity???/
+            # acceleration is change in velocity, also a vector
+            a.append(v[-2] - v[-1])
+        else:
+            # adding 0 bc no change if in initial pose
+            v.append(np.ndarray[0, 0])
+            omega.append(np.ndarray[0, 0])
+            a.append(np.ndarray[0, 0])
+        
+
+        # updating AUV position
+        movement = calculate_auv2_angular_acceleration(T, alpha, L, l, inertia)
+        AUVpose = AUVpose + movement
+
+    t = np.ndarray(t)
+    x = np.ndarray(x)
+    y = np.ndarray(y)
+    theta = np.ndarray(theta)
+    v = np.ndarray(v)
+    omega = np.ndarray(omega)
+    a = np.ndarray(a)

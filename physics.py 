@@ -2,6 +2,7 @@
 
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 g = 9.81 # gravity, m/s^2
 
@@ -55,8 +56,8 @@ def calculate_angular_acceleration(tau, I):
     """Calculates the angular acceleration of an object given the torque applied and its moment of inertia.
     
     formula: moment of inertia (I) x angular acceleration = torque (im assuming multiplication not cross product bc of units)
-    torque is in newton-meters (N*m) (vector), moment of inertia is in kg*m^2 (scalar)
-    returns angular acceleration in rad/s^2 (vector)
+    torque is in newton-meters (N*m) (vector??), moment of inertia is in kg*m^2 (scalar)
+    returns angular acceleration in rad/s^2 (scalar)
     """
     return tau / I 
 
@@ -67,11 +68,11 @@ def calculate_torque(F_magnitude, F_direction, r):
     formula: torque = r * F * sin(theta), or r x F
     r is distance from axis of rotation to where the force is applied, F is the force applied to the object
     F_magnitude is magnitude of force in newtons (N), F_direction is direction of force in degrees, r is in meters
-    returns torque in newton-meters (N*m) (vector)
+    returns torque in newton-meters (N*m) (scalar)
     """
     theta = math.radians(F_direction) # convert degrees to radians
-    F = np.array([math.cos(theta), math.sin(theta)])
-    return np.cross(F, r)
+    # F = np.array([F_magnitude * math.cos(theta), F_magnitude * math.sin(theta)])
+    return r * F_magnitude * math.sin(theta) # np.cross(F, r)
 
 # problem 7
 def calculate_moment_of_inertia(m, r):
@@ -233,9 +234,10 @@ def simulate_auv2_motion(T, alpha, L, l, mass=100, inertia=100, dt=0.1, t_final=
         if len(t) > 1:
             # velocity is change of position - it is a vector
             v.append(np.ndarray([x[-1] - x[-2], y[-1] - y[-2]]))
-            # angular velocity???/
+            # angular velocity is change of angle - a scalar i think??
+            omega.append(theta[-1] - theta[-2])
             # acceleration is change in velocity, also a vector
-            a.append(v[-2] - v[-1])
+            a.append(v[-1] - v[-2])
         else:
             # adding 0 bc no change if in initial pose
             v.append(np.ndarray[0, 0])
@@ -244,8 +246,12 @@ def simulate_auv2_motion(T, alpha, L, l, mass=100, inertia=100, dt=0.1, t_final=
         
 
         # updating AUV position
-        movement = calculate_auv2_angular_acceleration(T, alpha, L, l, inertia)
-        AUVpose = AUVpose + movement
+        turning = calculate_auv2_angular_acceleration(T, alpha, L, l, inertia)
+        movement = calculate_auv2_acceleration(T, alpha, theta, mass)
+
+        AUVpose[2] += turning
+        AUVpose[0] += movement[0]
+        AUVpose[1] += movement[1]
 
     t = np.ndarray(t)
     x = np.ndarray(x)
@@ -254,3 +260,25 @@ def simulate_auv2_motion(T, alpha, L, l, mass=100, inertia=100, dt=0.1, t_final=
     v = np.ndarray(v)
     omega = np.ndarray(omega)
     a = np.ndarray(a)
+
+    return t, x, y, theta, v, omega, a
+
+def plot_auv2_motion(t, x, y, theta, v, omega, a):
+    """Plots the motion of the AUV in the 2D plane.
+    
+    inputs:
+    t: an np.ndarray of the time steps of the simulation in seconds.
+    x: an np.ndarray of the x-positions of the AUV in meters.
+    y: an np.ndarray of the y-positions of the AUV in meters.
+    theta: an np.ndarray of the angles of the AUV in radians.
+    v: an np.ndarray of the velocities of the AUV in meters per second.
+    omega: an np.ndarray of the angular velocities of the AUV in radians per second.
+    a: an np.ndarray of the accelerations of the AUV in meters per second squared.
+
+    output: a plot of the AUV motion (im js plotting it by x and y coordinate, if i have time I will
+    make it a full plot with a box and arrow for velocity and everything)
+    """
+
+    plt.plot(x, y) # idk how to plot a box
+    plt.show()
+
